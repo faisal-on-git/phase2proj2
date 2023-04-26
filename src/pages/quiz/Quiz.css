@@ -1,0 +1,36 @@
+.quiz-main-container{
+    height: 90vh;
+    background: #222222;
+    color: #f2f2f2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+   
+}
+
+.quiz-container{
+    width: 60vw;
+    height: 50vh;
+    border: 5px solid #0DFF92;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+  
+    
+}
+
+.question-text{
+    font-size: 1.3rem;
+}
+.button-container-quiz{
+
+    display: flex;
+    width: 100%;
+    height: 40%;
+    justify-content: space-around;
+    align-items: center;
+    /* border: 2px solid red; */
+}
