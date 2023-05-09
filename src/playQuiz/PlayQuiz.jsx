@@ -6,19 +6,32 @@ import { Paper, InputBase, IconButton, Button } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 
 import TextField from "@mui/material/TextField";
-import "./PlayQuiz.css"
+import "./PlayQuiz.css";
 import { fetchQuizQuestions } from "../redux/actions/quizAction";
-export class PlayQuiz extends Component {
+import { motion } from "framer-motion";
+import { NonceProvider } from "react-select";
+import jsPDF from "jspdf";
+// const styledBy = (property, mapping) => (props) => mapping[props[property]];
 
-    state = {
-        category: "",
-        difficulty: "",
-        type: "",
-        amount: 10,
-        categoryDisplay: "",
-        difficultyDisplay: "",
-        typeDisplay: "",
-      };
+export class PlayQuiz extends Component {
+  
+
+
+componentDidMount() {
+  if(!this.props.user){
+    this.props.history.push("/");
+  }
+}    
+
+  state = {
+    category: "",
+    difficulty: "",
+    type: "",
+    amount: 10,
+    categoryDisplay: "",
+    difficultyDisplay: "",
+    typeDisplay: "",
+  };
   categoryOptions = [
     { data: 9, label: "General Knowledge" },
     { data: 10, label: "Entertainment: Books" },
@@ -56,209 +69,225 @@ export class PlayQuiz extends Component {
     { data: "multiple", label: "Multiple Choice" },
     { data: "boolean", label: "True/False" },
   ];
-  handlePlay=()=>{
-    console.log(this.state,"state")
+  handlePlay = () => {
+    console.log(this.state, "state");
 
     // this.props.fetchQuizQuestions("https://opentdb.com/api.php?amount=10&category=22&difficulty=medium&type=boolean")
-    this.props.fetchQuizQuestions(`https://opentdb.com/api.php?amount=${this.state.amount}&category=${this.state.category}&difficulty=${this.state.difficulty}&type=${this.state.type}`)
-
+    this.props.fetchQuizQuestions(
+      `https://opentdb.com/api.php?amount=${this.state.amount}&category=${this.state.category}&difficulty=${this.state.difficulty}&type=${this.state.type}`
+    );
 
     this.props.history.push({
-        pathname: "/quiz",
-        data: this.state,
+      pathname: "/quiz",
+      data: this.state,
     });
-  }
+  };
 
   render() {
     return (
-    //   <div>
-    //     current user{this.props.user}
-    //     <button onClick={() => this.props.history.push("/quiz")}>
-    //       play quiz
-    //     </button>
-    //   </div>
+      //   <div>
+      //     current user{this.props.user}
+      //     <button onClick={() => this.props.history.push("/quiz")}>
+      //       play quiz
+      //     </button>
+      //   </div>
 
-    <div className="start-quiz-main-container">
-    <div className="start-quiz-and-button">
-      <div className="start-quiz-option-container">
-        <Paper
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            width: 200,
-            height: 40,
-            mr: 1,
-          }}
+      <div className="start-quiz-main-container">
+        <motion.div className="start-quiz-and-button"
+        
+        animate={{ x: 0  }} initial={{ x: -1000 }} transition={{ duration: 1 }}
         >
-          <Autocomplete
-            disablePortal
-            id="combo-box-demo"
-            loading={true}
-            options={this.categoryOptions}
-            sx={{ flex: 1 }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Category.."
-                autoFocus
-                InputProps={{
-                  ...params.InputProps,
-                  sx: {
-                    "&.Mui-focused fieldset": {
-                      border: "none",
-                    },
-                  },
-                  focusVisible: false,
-                }}
-              />
-            )}
-            // onChange={(event, option) => this.handleOptionSelected(option)}
-            onChange={(event, option) => {
-                if (option !== null) {
-                  this.setState({ category: option.data });
-                } else {
-                  this.setState({ category: "" });
-                }
+          <div className="start-quiz-option-container">
+            <Paper
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                width: 200,
+                height: 40,
+                mr: 1,
               }}
-            inputValue={this.state.categoryDisplay}
-            onInputChange={(event, newInputValue) => {
-            //   this.setState({ category: newInputValue });
-            this.setState({categoryDisplay: newInputValue})
-            }}
-            freeSolo={false}
-            autoFocus
-          />
-        </Paper>
-        <Paper
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            width: 200,
-            height: 40,
-            mr: 1,
-          }}
-        >
-          <Autocomplete
-            disablePortal
-            id="combo-box-demo"
-            loading={true}
-            options={this.difficultyOptions}
-            sx={{ flex: 1 }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Difficulty..."
-                autoFocus
-                InputProps={{
-                  ...params.InputProps,
-                  sx: {
-                    "&.Mui-focused fieldset": {
-                      border: "none",
-                    },
-                  },
-                  focusVisible: false,
+            >
+              <Autocomplete
+                disablePortal
+                id="combo-box-demo"
+                loading={true}
+                options={this.categoryOptions}
+                sx={{ flex: 1 }}
+               
+                
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    // label="Category.."
+                    placeholder="Category.."
+
+                    
+                    autoFocus
+                    InputProps={{
+                      ...params.InputProps,
+                      sx: {
+                        "&.Mui-focused fieldset": {
+                          border: "none",
+                      
+                         
+                        },
+                     
+
+                      },
+                     
+                     
+                      focusVisible: false,
+                    }}
+                  />
+                )}
+                // onChange={(event, option) => this.handleOptionSelected(option)}
+                onChange={(event, option) => {
+                  if (option !== null) {
+                    this.setState({ category: option.data });
+                  } else {
+                    this.setState({ category: "" });
+                  }
                 }}
+                inputValue={this.state.categoryDisplay}
+                onInputChange={(event, newInputValue) => {
+                  //   this.setState({ category: newInputValue });
+                  this.setState({ categoryDisplay: newInputValue });
+                }}
+                freeSolo={false}
+                autoFocus
               />
-            )}
-            // onChange={(event, option) => this.handleOptionSelected(option)}
-            onChange={(event, option) => {
-                if (option !== null) {
+            </Paper>
+            <Paper
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                width: 200,
+                height: 40,
+                mr: 1,
+              }}
+            >
+              <Autocomplete
+                disablePortal
+                id="combo-box-demo"
+                loading={true}
+                options={this.difficultyOptions}
+                sx={{ flex: 1 }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    // label="Difficulty..."
+                    placeholder="Difficulty..."
+                    autoFocus
+                    InputProps={{
+                      ...params.InputProps,
+                      sx: {
+                        "&.Mui-focused fieldset": {
+                          border: "none",
+                        },
+                      },
+                      focusVisible: false,
+                    }}
+                  />
+                )}
+                // onChange={(event, option) => this.handleOptionSelected(option)}
+                onChange={(event, option) => {
+                  if (option !== null) {
                     this.setState({ difficulty: option.data });
-                } else {
+                  } else {
                     this.setState({ difficulty: "" });
-                }
+                  }
                 }}
-            // inputValue={this.state.difficulty}
-            inputValue={this.state.difficultyDisplay}
-            // onInputChange={(event, newInputValue) => {
-            // this.setState({difficulty: newInputValue})
-            // }}
-            onInputChange={(event, newInputValue) => {
-                this.setState({difficultyDisplay: newInputValue})
-            }}
-
-            freeSolo={false}
-            autoFocus
-          />
-        </Paper>
-        <Paper
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            width: 200,
-            height: 40,
-            mr: 1,
-          }}
-        >
-          <Autocomplete
-            disablePortal
-            id="combo-box-demo"
-            loading={true}
-            options={this.typeOptions}
-            sx={{ flex: 1 }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Type.."
+                // inputValue={this.state.difficulty}
+                inputValue={this.state.difficultyDisplay}
+                // onInputChange={(event, newInputValue) => {
+                // this.setState({difficulty: newInputValue})
+                // }}
+                onInputChange={(event, newInputValue) => {
+                  this.setState({ difficultyDisplay: newInputValue });
+                }}
+                freeSolo={false}
                 autoFocus
-                InputProps={{
-                  ...params.InputProps,
-                  sx: {
-                    "&.Mui-focused fieldset": {
-                      border: "none",
-                    },
-                  },
-                  focusVisible: false,
-                }}
               />
-            )}
-            // onChange={(event, option) => this.handleOptionSelected(option)}
-            onChange={(event, option) => {
-                if (option !== null) {
+            </Paper>
+            <Paper
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                width: 200,
+                height: 40,
+                mr: 1,
+              }}
+            >
+              <Autocomplete
+                disablePortal
+                id="combo-box-demo"
+                loading={true}
+                options={this.typeOptions}
+                sx={{ flex: 1 }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    // label="Type.."
+                    placeholder="Type.."
+                    autoFocus
+                    InputProps={{
+                      ...params.InputProps,
+                      sx: {
+                        "&.Mui-focused fieldset": {
+                          border: "none",
+                        },
+                      },
+                      focusVisible: false,
+                    }}
+                  />
+                )}
+                // onChange={(event, option) => this.handleOptionSelected(option)}
+                onChange={(event, option) => {
+                  if (option !== null) {
                     this.setState({ type: option.data });
-                } else {
+                  } else {
                     this.setState({ type: "" });
-                }
+                  }
                 }}
-            // inputValue={this.state.type}
-            inputValue={this.state.typeDisplay}
-            // onInputChange={(event, newInputValue) => {
-            // this.setState({type: newInputValue})
-            // }}
-            onInputChange={(event, newInputValue) => {
-                this.setState({typeDisplay: newInputValue})
-            }}
-
-            freeSolo={false}
-            autoFocus
-          />
-        </Paper>
-        <Paper
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            width: 200,
-            height: 40,
-            mr: 1,
-          }}
-        >
-          <InputBase
-            onChange={(e) => this.setState({amount: e.target.value})}
-            // value={this.state.searchQuery}
-            sx={{ ml: 1, flex: 1 }}
-            placeholder="Search"
-          />
-        </Paper>
+                // inputValue={this.state.type}
+                inputValue={this.state.typeDisplay}
+                // onInputChange={(event, newInputValue) => {
+                // this.setState({type: newInputValue})
+                // }}
+                onInputChange={(event, newInputValue) => {
+                  this.setState({ typeDisplay: newInputValue });
+                }}
+                freeSolo={false}
+                autoFocus
+              />
+            </Paper>
+            <Paper
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                width: 200,
+                height: 40,
+                mr: 1,
+              }}
+            >
+              <InputBase
+                onChange={(e) => this.setState({ amount: e.target.value })}
+                // value={this.state.searchQuery}
+                sx={{ ml: 1, flex: 1 }}
+                placeholder="Amount.."
+              />
+            </Paper>
+          </div>
+          <Button
+            variant="outlined"
+            style={{ backgroundColor: "#faff5a", color: "#222222" }}
+            onClick={this.handlePlay}
+            data-testid="play-button"
+          >
+            Play!
+          </Button>
+        </motion.div>
       </div>
-      <Button
-        variant="outlined"
-        style={{ backgroundColor: "#faff5a", color: "#222222" }}
-        onClick={this.handlePlay}
-      >
-        Play!
-      </Button>
-    </div>
-  </div>
     );
   }
 }
@@ -267,8 +296,7 @@ const mapStateToProps = (state) => ({
 });
 const mapDispatchToProps = (dispatch) => ({
   login: (user) => dispatch(login(user)),
-  fetchQuizQuestions: (url) => dispatch(fetchQuizQuestions(url))
-  
+  fetchQuizQuestions: (url) => dispatch(fetchQuizQuestions(url)),
 });
 const PlayQuizWithRouter = withRouter(PlayQuiz);
 

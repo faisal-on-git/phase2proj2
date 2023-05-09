@@ -6,33 +6,30 @@ import "./Result.css";
 import { Button } from "@mui/material";
 import { setQuizScore } from "../../redux/actions/quizAction";
 
-
 export class Result extends Component {
+  handleRestart = () => {
+    this.props.resetQuiz();
 
-    handleRestart = () => {
-        this.props.resetQuiz();
+    this.props.history.push("/startQuiz");
+  };
 
-        this.props.history.push("/startQuiz");
-        };
-
-        componentDidMount(){
-         const  calculateScore = () => {
-            const { quizQuestions, userAnswers } = this.props;
-            console.log(userAnswers, "userAnswers")
-            let score = 0;
-            quizQuestions.forEach((question, index) => {
-              console.log(question.correct_answer, "question.correct_answer");
-              console.log(userAnswers[index], "userAnswers[index]");
-              if (question.correct_answer === userAnswers[index]) {
-                score += 1;
-              }
-            });
-            return score;
-          };
-          const score = calculateScore();
-          this.props.setQuizScore(score);
-
+  componentDidMount() {
+    const calculateScore = () => {
+      const { quizQuestions, userAnswers } = this.props;
+      console.log(userAnswers, "userAnswers");
+      let score = 0;
+      quizQuestions.forEach((question, index) => {
+        console.log(question.correct_answer, "question.correct_answer");
+        console.log(userAnswers[index], "userAnswers[index]");
+        if (question.correct_answer === userAnswers[index]) {
+          score += 1;
         }
+      });
+      return score;
+    };
+    const score = calculateScore();
+    this.props.setQuizScore(score);
+  }
   render() {
     return (
       <>
@@ -49,17 +46,22 @@ export class Result extends Component {
             </div>
             <div className="wrong-answer">
               <div className="wrong-answer-text">Wrong Answers:</div>
-              <div className="wrong-answer-score">{this.props?.quizQuestions?.length-this.props.quizScore}</div>
+              <div className="wrong-answer-score">
+                {this.props?.quizQuestions?.length - this.props.quizScore}
+              </div>
             </div>
             <Button
-            variant="outlined"
-            style={{ backgroundColor: "#faff5a", color: "#222222",marginBottom: "20px" }}
-            onClick={this.handleRestart}
-          >
-            Restart!
-          </Button>
+              variant="outlined"
+              style={{
+                backgroundColor: "#faff5a",
+                color: "#222222",
+                marginBottom: "20px",
+              }}
+              onClick={this.handleRestart}
+            >
+              Restart!
+            </Button>
           </div>
-         
         </div>
         <div>{this.props.quizScore}</div>
         <div>{this.props.user}</div>
@@ -78,7 +80,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   resetQuiz: () => dispatch(resetQuiz()),
   setQuizScore: (score) => dispatch(setQuizScore(score)),
-
 });
 const ResultWithRouter = withRouter(Result);
 export default connect(mapStateToProps, mapDispatchToProps)(ResultWithRouter);

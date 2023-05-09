@@ -11,72 +11,92 @@ import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
 import { pink } from "@mui/material/colors";
 import he from "he";
-import './Quiz.css'
-// import Button from "@mui/material";
-// import { connect } from "react-redux";
+import "./Quiz.css";
+import {motion} from "framer-motion"
+
 
 import {
   fetchQuizQuestions,
   setQuizIndex,
   resetQuiz,
   setUserAnswers,
-  setQuizScore
+  setQuizScore,
 } from "../../redux/actions/quizAction";
-import { Button } from "@mui/material";
-// import { FormControlLabel } from '@mui/material';
+import {
+  Button,
+  Pagination,
+  Stack,
+  ThemeProvider,
+  createTheme,
+} from "@mui/material";
+import ErrorBoundary from "../../componenets/ErrorBoundary";
+
 
 export class Quiz extends Component {
-
-
+  theme = createTheme({
+    components: {
+      MuiPagination: {
+        styleOverrides: {
+          root: {
+            "& .MuiPaginationItem-page": {
+              color: "#f2f2f2",
+            },
+            "& .MuiPaginationItem-icon": {
+              color: "#f2f2f2",
+            },
+          },
+        },
+      },
+    },
+  });
 
   state = {
     modifiedQuizQuestions: [],
     selectedValue: "",
+    currentQuestionIndex: 0,
   };
-
-
-
-
 
   handleChange = (event) => {
     console.log(event.target.value, "event.target.value");
     this.setState({ selectedValue: event.target.value });
+    const updatedAnswers = [...this.props.userAnswers];
+    updatedAnswers[this.props.quizIndex] = event.target.value;
+    console.log(updatedAnswers, "updatedAnswers");
+    this.props.setUserAnswers(updatedAnswers);
+    if (this.props.quizIndex === this.props.quizQuestions.length) {
+      this.props.setQuizIndex(0);
+      this.props.history.push("/result", {});
+    }
+  };
+
+  handleSubmit = () => {
+    this.props.history.push("/result", {});
   };
 
   handleNext = () => {
     const ci = this.props.quizIndex;
     const qi = this.props.quizQuestions.length;
 
-
-
-
-    if(ci===qi-1){
-      console.log(ci, "ci", qi, "qi")
+    if (ci === qi - 1) {
+      console.log(ci, "ci", qi, "qi");
       // this.props.resetQuiz()
-      console.log(this.props.userAnswers, "userAnswers")
+      console.log(this.props.userAnswers, "userAnswers");
       const updatedAnswers = [...this.props.userAnswers];
       updatedAnswers.push(this.state.selectedValue);
-      
+
       console.log(updatedAnswers, "updatedAnswers at last question");
       this.props.setUserAnswers(updatedAnswers);
-      const score=this.calculateScore()
-      this.props.setQuizScore(score)
 
-      
-      this.props.history.push('/result',{})
-
+      this.props.history.push("/result", {});
     }
 
     if (ci < qi - 1) {
       this.props.setQuizIndex(ci + 1);
-      console.log(this.props.userAnswers, "userAnswers")
+      console.log(this.props.userAnswers, "userAnswers");
       const updatedAnswers = [...this.props.userAnswers];
       updatedAnswers.push(this.state.selectedValue);
       console.log(updatedAnswers, "updatedAnswers");
       this.props.setUserAnswers(updatedAnswers);
-
-
-
     }
     console.log(ci, "ci", qi, "qi");
   };
@@ -90,23 +110,17 @@ export class Quiz extends Component {
       updatedAnswers.splice(ci, 1);
       console.log(updatedAnswers, "updatedAnswers");
       this.props.setUserAnswers(updatedAnswers);
-
-
-      
-  // this.setState((prevState) => {
-  //   const updatedAnswers = [...prevState.userAnswers];
-  //   updatedAnswers.splice(prevState.currentQuestionIndex, 1);
-    
-  // });
-
-
     }
   };
 
+  handlePaginationQusetion = (event, value) => {
+    this.setState({ currentQuestionIndex: value - 1 });
+    this.props.setQuizIndex(value - 1); 
+  };
 
   calculateScore = () => {
     const { quizQuestions, userAnswers } = this.props;
-    console.log(userAnswers, "userAnswers")
+    console.log(userAnswers, "userAnswers");
     let score = 0;
     quizQuestions.forEach((question, index) => {
       console.log(question.correct_answer, "question.correct_answer");
@@ -120,7 +134,6 @@ export class Quiz extends Component {
 
   componentDidMount = () => {
     console.log("componentDidMount");
-    // this.props.fetchQuizQuestions('https://opentdb.com/api.php?amount=10&category=22&difficulty=medium&type=multiple');
 
     const shuffled = this.props.quizQuestions.map((question, index) => {
       const answers = question.incorrect_answers.concat(
@@ -133,132 +146,113 @@ export class Quiz extends Component {
         questionId: index,
       };
     });
-    console.log(shuffled, "shuffled")
+    console.log(shuffled, "shuffled");
     this.setState({ modifiedQuizQuestions: shuffled });
-    // console.log(shuffled, "shuffled");
-
-    // console.log(this.props.quizQuestions, "quizQuestions");
-    // console.log(shuffled[0].answers, "shuffled[0].answers");
   };
 
+  componentDidUpdate = (prevProps, prevState) => {
+    console.log(prevProps, "prevProps");
 
-componentDidUpdate=(prevProps, prevState)=>{
-  // console.log("componentDidUpdate")
-  console.log(prevProps, "prevProps")
+    console.log(this.props, "this.props");
+    if (prevProps.quizQuestions !== this.props.quizQuestions) {
+      const shuffled = this.props.quizQuestions?.map((question, index) => {
+        const answers = question.incorrect_answers.concat(
+          question.correct_answer
+        );
+        return {
+          question: question.question,
+          answers: _.shuffle(answers),
+          correctAnswer: question.correct_answer,
+          questionId: index,
+        };
+      });
+      this.setState({ modifiedQuizQuestions: shuffled });
+    }
 
-  // console.log(prevState, "prevState")
-  console.log(this.props, "this.props")
-  // console.log(this.state, "this.state")
-  if(prevProps.quizQuestions!==this.props.quizQuestions){
-const shuffled = this.props.quizQuestions?.map((question, index) => {
-      const answers = question.incorrect_answers.concat(
-        question.correct_answer
-      );
-      return {  
-        question: question.question,
-        answers: _.shuffle(answers),
-        correctAnswer: question.correct_answer,
-        questionId: index,
-      };
-    });
-  this.setState({ modifiedQuizQuestions: shuffled });
-
-  }
-  
-}
-
-
-
-
+    
+  };
 
   render() {
-    // const controlProps = (item) => ({
-    //   checked: item === "c",
-    //   disabled: item === "d",
-    //   name: "radio-buttons",
-    //   value: item,
-    // });
-    // console.log(this.props.quizQuestions, "quizQuestions")
-
     const { modifiedQuizQuestions } = this.state;
 
     if (modifiedQuizQuestions?.length === 0) {
       return <div>Loading...</div>;
     }
-    if(this.props.quizQuestions?.length===0){
+    if (this.props.quizQuestions?.length === 0) {
       return <div>Quiz is over</div>;
     }
 
     return (
+     
       <div className="quiz-main-container">
-
-
-        <div className="quiz-container">
+        <motion.div className="quiz-container"
+        animate={{ x: 0 }} initial={{ x: "-100vw" }} transition={{ duration: 1 }}
         
-        {/* <p><b>qn</b>{this.state.modifiedQuizQuestions[this.props.quizIndex].question}</p>
-       
-        <ul>
-            {
-            this.state.modifiedQuizQuestions[this.props.quizIndex].answers.map((answer, index) => {
-                return (
-                    <li key={index}>{answer}</li>
-                )
-            })
-        }
-
-        </ul> */}
-        {
-          <FormControl>
-            {/* <FormLabel >{this.state.modifiedQuizQuestions[this.props.quizIndex].question}</FormLabel> */}
-            <h6 className="question-text">
-              {he.decode(this.state.modifiedQuizQuestions[this.props.quizIndex]?.question)}
-            </h6>
-            <RadioGroup
-              aria-labelledby="demo-radio-buttons-group-label"
-              defaultValue="female"
-              name="radio-buttons-group"
-              value={this.selectedValue}
-              onChange={this.handleChange}
-            >
-              {this.state.modifiedQuizQuestions[
-                this.props.quizIndex
-              ]?.answers?.map((answer, index) => {
-                return (
-                  <FormControlLabel
-                    value={answer}
-                    control={<Radio color="secondary" sx={{color: pink[600]}}/>}
-                    label={answer}
-                  />
-                );
-              })}
-            </RadioGroup>
-          </FormControl>
-        }
-        <div className="button-container-quiz">
-        <Button
-            variant="outlined"
-            style={{ backgroundColor: "#faff5a", color: "#222222" }}
-            onClick={this.handleNext}
-          >
-            Next
-          </Button>
-
-        {/* <button onClick={this.handleNext}>next</button> */}
-       {/* {this.props?.quizIndex>0 && <button onClick={this.handlePrv}>prev</button>} */}
-
-       {this.props?.quizIndex>0 && <Button
-      variant="outlined"
-      style={{ backgroundColor: "#0DFF92", color: "#222222" }} 
-      onClick={this.handlePrv}
+        
+        >
+            <motion.div
+        initial={{ x: "-100vw" }} // Initial position off-screen to the left
+        animate={{ x: 0 }} // Animate to the center of the screen
+        transition={{ duration: 4 }} // Transition animation duration
       >
-      Prev
-      </Button>
-      
-      
-      }
-       </div>
-       </div>
+          {
+            <FormControl>
+              <h6 className="question-text">
+                {he.decode(
+                  this.state.modifiedQuizQuestions[this.props.quizIndex]
+                    ?.question
+                )}
+              </h6>
+              <RadioGroup
+                aria-labelledby="demo-radio-buttons-group-label"
+                defaultValue="female"
+                name="radio-buttons-group"
+                value={this.selectedValue}
+                onChange={this.handleChange}
+              >
+                {this.state.modifiedQuizQuestions[
+                  this.props.quizIndex
+                ]?.answers?.map((answer, index) => {
+                  return (
+                    <FormControlLabel
+                      value={answer}
+                      control={
+                        <Radio color="secondary" sx={{ color: pink[600] }} />
+                      }
+                      label={answer}
+                    />
+                  );
+                })}
+              </RadioGroup>
+            </FormControl>
+            
+          }
+</motion.div>
+          <ThemeProvider theme={this.theme}>
+            <Stack spacing={2} direction="row">
+              <Pagination
+                count={this.props.quizQuestions.length}
+                color="secondary"
+                onChange={this.handlePaginationQusetion}
+                sx={{ color: "white" }}
+              />
+            </Stack>
+          </ThemeProvider>
+
+          {this.props.quizIndex === this.props.quizQuestions.length - 1 && (
+            <Button
+              variant="outlined"
+              style={{ backgroundColor: "#faff5a", color: "#222222" }}
+              size="small"
+              onClick={this.handleSubmit}
+            >
+              Submit
+            </Button>
+          )}
+        </motion.div>
       </div>
+      
+      // </div>
     );
   }
 }
